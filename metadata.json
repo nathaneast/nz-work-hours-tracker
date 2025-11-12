@@ -1,0 +1,5 @@
+{
+  "name": "NZ Work Hours Tracker",
+  "description": "An application for New Zealand Working Holiday visa holders to track their daily work hours, distinguish between multiple jobs, and estimate their weekly pre-tax and after-tax wages, including automatic calculations for public holidays.",
+  "requestFramePermissions": []
+}

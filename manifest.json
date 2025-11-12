@@ -1,0 +1,23 @@
+{
+  "name": "NZ Work Hours Tracker",
+  "short_name": "NZ Work Tracker",
+  "description": "An application for New Zealand Working Holiday visa holders to track their daily work hours, distinguish between multiple jobs, and estimate their weekly pre-tax and after-tax wages, including automatic calculations for public holidays.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#E6FF94",
+  "theme_color": "#006769",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
