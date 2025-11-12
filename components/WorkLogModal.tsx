@@ -7,12 +7,13 @@ interface WorkLogModalProps {
   date: Date;
   jobs: Job[];
   workLogForDay: WorkLogEntry[];
-  onSave: (entries: WorkLogEntry[]) => void;
+  onSave: (entries: WorkLogEntry[]) => Promise<void> | void;
   holidayName?: string;
 }
 
 export const WorkLogModal: React.FC<WorkLogModalProps> = ({ isOpen, onClose, date, jobs, workLogForDay, onSave, holidayName }) => {
   const [entries, setEntries] = useState<WorkLogEntry[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const initialEntries = jobs.map(job => {
@@ -28,15 +29,31 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({ isOpen, onClose, dat
     setEntries(prev => prev.map(entry => entry.jobId === jobId ? { ...entry, hours: Math.max(0, hours) } : entry));
   };
 
-  const handleSave = () => {
-    // Filter out entries with 0 hours before saving
-    onSave(entries.filter(e => e.hours > 0));
-    onClose();
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      // Filter out entries with 0 hours before saving
+      await onSave(entries.filter(e => e.hours > 0));
+      onClose();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to save work log', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
   
-  const handleClearDay = () => {
-    onSave([]); // Save an empty array to clear the day
-    onClose();
+  const handleClearDay = async () => {
+    try {
+      setIsSaving(true);
+      await onSave([]); // Save an empty array to clear the day
+      onClose();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to clear work log', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const totalHours = entries.reduce((acc, curr) => acc + curr.hours, 0);
@@ -69,7 +86,8 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({ isOpen, onClose, dat
                   type="number"
                   value={entry?.hours || ''}
                   onChange={(e) => handleHourChange(job.id, parseFloat(e.target.value) || 0)}
-                  className="w-24 p-2 border rounded-md text-right bg-white text-gray-900"
+                className="w-24 p-2 border rounded-md text-right bg-white text-gray-900 disabled:bg-gray-100"
+                disabled={isSaving}
                   placeholder="0"
                   step="0.25"
                 />
@@ -86,17 +104,25 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({ isOpen, onClose, dat
         <div className="mt-6 flex justify-between items-center">
           <button 
             onClick={handleClearDay}
-            disabled={totalHours === 0}
+            disabled={totalHours === 0 || isSaving}
             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Clear Day
           </button>
           <div className="flex gap-3">
-            <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+            <button
+              onClick={onClose}
+              disabled={isSaving}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+            >
               Cancel
             </button>
-            <button onClick={handleSave} className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-primary">
-              Save
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-4 py-2 bg-secondary text-white rounded-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isSaving ? 'Saving…' : 'Save'}
             </button>
           </div>
         </div>
