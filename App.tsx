@@ -99,11 +99,10 @@ const App: React.FC = () => {
     jobBreakdown: [],
   });
 
-  const [editCount, setEditCount] = useState(0);
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
+  const shouldShowLoginBanner = !user;
   const buildNewJob = useCallback((existingJobs: Job[]): Job => {
     const color = JOB_COLORS[existingJobs.length % JOB_COLORS.length];
     return {
@@ -158,13 +157,6 @@ const App: React.FC = () => {
       subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    if (user) {
-      setShowLoginPrompt(false);
-      setEditCount(0);
-    }
-  }, [user]);
 
   const captureDataError = useCallback((context: string, error: unknown) => {
     // eslint-disable-next-line no-console
@@ -253,7 +245,6 @@ const App: React.FC = () => {
     await supabase.auth.signOut();
     setJobs(MOCK_JOBS);
     setWorkLog(createMockWorkLog());
-    setShowLoginPrompt(false);
   };
 
   // Combine national holidays with the selected regional holiday
@@ -294,25 +285,6 @@ const App: React.FC = () => {
     setSelectedDate(null);
   };
 
-  const recordUnsavedChange = () => {
-    if (user) {
-      return;
-    }
-    setEditCount((prev) => {
-      if (prev >= 3) {
-        if (!showLoginPrompt) {
-          setShowLoginPrompt(true);
-        }
-        return prev;
-      }
-      const next = prev + 1;
-      if (next >= 3 && !showLoginPrompt) {
-        setShowLoginPrompt(true);
-      }
-      return next;
-    });
-  };
-
   const handleSaveWorkLog = async (entries: WorkLogEntry[]) => {
     if (!selectedDate) {
       return;
@@ -333,7 +305,6 @@ const App: React.FC = () => {
     });
 
     if (!user || !isSupabaseConfigured) {
-      recordUnsavedChange();
       return;
     }
 
@@ -354,7 +325,6 @@ const App: React.FC = () => {
 
     if (!user || !isSupabaseConfigured) {
       setJobs((prev) => [...prev, newJob]);
-      recordUnsavedChange();
       return;
     }
 
@@ -384,7 +354,6 @@ const App: React.FC = () => {
     setJobs((prev) => prev.map((job) => (job.id === id ? updatedJob : job)));
 
     if (!user || !isSupabaseConfigured) {
-      recordUnsavedChange();
       return;
     }
 
@@ -421,7 +390,6 @@ const App: React.FC = () => {
     });
 
     if (!user || !isSupabaseConfigured) {
-      recordUnsavedChange();
       return;
     }
 
@@ -500,6 +468,28 @@ const App: React.FC = () => {
               <span className="text-sm text-red-600">{authError}</span>
             )}
           </div>
+          {shouldShowLoginBanner && (
+            <div className="mt-6 w-full max-w-2xl mx-auto bg-yellow-100 border border-yellow-300 text-yellow-900 px-5 py-4 rounded-lg text-left sm:text-center">
+              <p className="text-base font-semibold">지금은 체험 모드입니다.</p>
+              <p className="mt-2 text-sm sm:text-base text-yellow-800">
+                현재 입력하는 값은 이 브라우저에만 임시로 유지됩니다. Google로
+                로그인하면 언제든 다시 불러올 수 있도록 Supabase에 안전하게
+                저장됩니다.
+              </p>
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-3">
+                <button
+                  onClick={handleSignIn}
+                  disabled={!isSupabaseConfigured || isAuthLoading}
+                  className="inline-flex items-center justify-center px-5 py-2 bg-secondary text-white font-medium rounded-md shadow-sm hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isAuthLoading ? "Preparing sign-in…" : "Sign in with Google"}
+                </button>
+                <span className="text-xs sm:text-sm text-yellow-700">
+                  로그인 후에는 작업·근무 기록이 자동으로 저장됩니다.
+                </span>
+              </div>
+            </div>
+          )}
         </header>
 
         {user && isDataLoading && (
@@ -517,26 +507,6 @@ const App: React.FC = () => {
         {user && isSupabaseConfigured && isSyncing && (
           <div className="bg-gray-100 border border-gray-200 text-gray-700 px-4 py-2 rounded-md mb-6 text-sm">
             Saving your changes to Supabase…
-          </div>
-        )}
-
-        {showLoginPrompt && (
-          <div
-            className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-6"
-            role="alert"
-          >
-            <p className="font-bold">Save Your Data!</p>
-            <p>
-              You've made some changes. To save your work logs and jobs
-              permanently, please log in.
-            </p>
-            <button
-              onClick={handleSignIn}
-              disabled={isAuthLoading || Boolean(user)}
-              className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm disabled:bg-gray-400"
-            >
-              {user ? "Logged in" : "Sign in with Google"}
-            </button>
           </div>
         )}
 
