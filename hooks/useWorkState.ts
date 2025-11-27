@@ -31,9 +31,16 @@ export type WorkState = {
   setDataError: (message: string | null) => void;
 };
 
-export const useWorkState = (user: User | null): WorkState => {
-  const [jobs, setJobs] = useState<Job[]>(MOCK_JOBS);
-  const [workLog, setWorkLog] = useState<WorkLog>(createMockWorkLog);
+export const useWorkState = (
+  user: User | null,
+  isAuthLoading: boolean
+): WorkState => {
+  const [jobs, setJobs] = useState<Job[]>(() =>
+    user || isAuthLoading ? [] : MOCK_JOBS
+  );
+  const [workLog, setWorkLog] = useState<WorkLog>(() =>
+    user || isAuthLoading ? {} : createMockWorkLog()
+  );
   const [isSyncing, setIsSyncing] = useState(false);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [dataError, setDataError] = useState<string | null>(null);
@@ -51,7 +58,7 @@ export const useWorkState = (user: User | null): WorkState => {
   useEffect(() => {
     let isMounted = true;
 
-    if (!user || !isSupabaseConfigured) {
+    if (!isSupabaseConfigured) {
       setIsDataLoading(false);
       setDataError(null);
       setJobs(MOCK_JOBS);
@@ -60,6 +67,24 @@ export const useWorkState = (user: User | null): WorkState => {
         isMounted = false;
       };
     }
+
+    if (!user) {
+      if (!isAuthLoading) {
+        setIsDataLoading(false);
+        setDataError(null);
+        setJobs(MOCK_JOBS);
+        setWorkLog(createMockWorkLog());
+      } else {
+        setJobs([]);
+        setWorkLog({});
+      }
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    setJobs([]);
+    setWorkLog({});
 
     const loadUserData = async () => {
       setIsDataLoading(true);
@@ -96,7 +121,7 @@ export const useWorkState = (user: User | null): WorkState => {
     return () => {
       isMounted = false;
     };
-  }, [user, captureDataError]);
+  }, [user, captureDataError, isAuthLoading]);
 
   const { addJob, saveJob, deleteJob, saveWorkLog } = useWorkActions({
     user,

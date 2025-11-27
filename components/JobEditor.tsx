@@ -106,8 +106,8 @@ export const JobEditor: React.FC<JobEditorProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-800">Manage Jobs</h2>
         {!isAuthenticated && (
-          <span className="text-xs text-gray-500">
-            로그인하면 작업이 저장됩니다.
+          <span className="text-xs font-semibold text-yellow-800 bg-yellow-100 px-3 py-1 rounded-full">
+            Sign in to save your jobs securely.
           </span>
         )}
       </div>
