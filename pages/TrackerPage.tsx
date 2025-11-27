@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { User } from "@supabase/supabase-js";
 import type { Job, Region, WorkLog, WorkLogEntry } from "../types";
 import { Calendar } from "../components/Calendar";
@@ -69,6 +69,14 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
   calendar,
   work,
 }) => {
+  const selectedDayEntries = useMemo(() => {
+    if (!calendar.selectedDate) {
+      return [];
+    }
+    const key = toYYYYMMDD(calendar.selectedDate);
+    return work.workLog[key] ?? [];
+  }, [calendar.selectedDate, work.workLog]);
+
   return (
     <div
       className="min-h-screen bg-gray-50 text-gray-800 p-4 sm:p-6 lg:p-8"
@@ -152,9 +160,7 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
           onClose={calendar.handleModalClose}
           date={calendar.selectedDate}
           jobs={work.jobs}
-          workLogForDay={
-            work.workLog[toYYYYMMDD(calendar.selectedDate)] || []
-          }
+          workLogForDay={selectedDayEntries}
           onSave={work.onSaveWorkLog}
           holidayName={calendar.holidayName}
         />
