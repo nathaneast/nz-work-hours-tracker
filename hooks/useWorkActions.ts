@@ -23,8 +23,18 @@ type Options = {
   handleError: (context: string, error: unknown) => void;
 };
 
+const getNextColor = (existingJobs: Job[]): string => {
+  const usedColors = new Set(existingJobs.map((job) => job.color));
+  for (const color of JOB_COLORS) {
+    if (!usedColors.has(color)) {
+      return color;
+    }
+  }
+  return JOB_COLORS[existingJobs.length % JOB_COLORS.length];
+};
+
 const buildNewJob = (existingJobs: Job[]): Job => {
-  const color = JOB_COLORS[existingJobs.length % JOB_COLORS.length];
+  const color = getNextColor(existingJobs);
   return {
     id:
       typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -49,31 +59,21 @@ export const useWorkActions = ({
   const addJob = useCallback(async () => {
     const newJob = buildNewJob(jobs);
 
-    if (!user || !isSupabaseConfigured) {
-      setJobs((prev) => [...prev, newJob]);
-      return;
-    }
+    setJobs((prev) => [...prev, newJob]);
+  }, [jobs, setJobs]);
 
-    setIsSyncing(true);
-    setDataError(null);
-    try {
-      const savedJob = await upsertJob(user.id, newJob);
-      setJobs((prev) => [...prev, savedJob]);
-    } catch (error) {
-      handleError("작업 추가 실패", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  }, [user, jobs, setJobs, setDataError, setIsSyncing, handleError]);
-
-  const updateJob = useCallback(
-    async (id: string, field: keyof Job, value: string | number) => {
+  const saveJob = useCallback(
+    async (id: string, updates: { name: string; payRate: number }) => {
       const targetJob = jobs.find((job) => job.id === id);
       if (!targetJob) {
         return;
       }
 
-      const updatedJob: Job = { ...targetJob, [field]: value } as Job;
+      const updatedJob: Job = {
+        ...targetJob,
+        name: updates.name,
+        payRate: updates.payRate,
+      };
       setJobs((prev) => prev.map((job) => (job.id === id ? updatedJob : job)));
 
       if (!user || !isSupabaseConfigured) {
@@ -85,7 +85,7 @@ export const useWorkActions = ({
         const savedJob = await upsertJob(user.id, updatedJob);
         setJobs((prev) => prev.map((job) => (job.id === id ? savedJob : job)));
       } catch (error) {
-        handleError("작업 수정 실패", error);
+        handleError("작업 저장 실패", error);
         setJobs((prev) =>
           prev.map((job) => (job.id === id ? targetJob : job))
         );
@@ -181,5 +181,5 @@ export const useWorkActions = ({
     [user, workLog, setWorkLog, setIsSyncing, setDataError, handleError]
   );
 
-  return { addJob, updateJob, deleteJob, saveWorkLog };
+  return { addJob, saveJob, deleteJob, saveWorkLog };
 };

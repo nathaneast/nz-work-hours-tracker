@@ -46,7 +46,7 @@ const App: React.FC = () => {
       isDataLoading: workState.isDataLoading,
       dataError: workState.dataError,
       onAddJob: workState.addJob,
-      onUpdateJob: workState.updateJob,
+      onSaveJob: workState.saveJob,
       onDeleteJob: workState.deleteJob,
       onSaveWorkLog: handleSaveWorkLog,
     },

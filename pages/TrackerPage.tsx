@@ -29,10 +29,9 @@ type WorkProps = {
   isDataLoading: boolean;
   dataError: string | null;
   onAddJob: () => Promise<void>;
-  onUpdateJob: (
+  onSaveJob: (
     id: string,
-    field: keyof Job,
-    value: string | number
+    updates: { name: string; payRate: number }
   ) => Promise<void>;
   onDeleteJob: (id: string) => Promise<void>;
   onSaveWorkLog: (entries: WorkLogEntry[]) => Promise<void>;
@@ -141,7 +140,7 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
             <JobEditor
               jobs={work.jobs}
               onAddJob={work.onAddJob}
-              onUpdateJob={work.onUpdateJob}
+              onSaveJob={work.onSaveJob}
               onDeleteJob={work.onDeleteJob}
               disabled={work.isSyncing || work.isDataLoading}
               isAuthenticated={Boolean(auth.user)}

@@ -25,11 +25,7 @@ export type WorkState = {
   setJobs: Dispatch<SetStateAction<Job[]>>;
   setWorkLog: Dispatch<SetStateAction<WorkLog>>;
   addJob: () => Promise<void>;
-  updateJob: (
-    id: string,
-    field: keyof Job,
-    value: string | number
-  ) => Promise<void>;
+  saveJob: (id: string, updates: { name: string; payRate: number }) => Promise<void>;
   deleteJob: (id: string) => Promise<void>;
   saveWorkLog: (date: Date, entries: WorkLogEntry[]) => Promise<void>;
   setDataError: (message: string | null) => void;
@@ -102,7 +98,7 @@ export const useWorkState = (user: User | null): WorkState => {
     };
   }, [user, captureDataError]);
 
-  const { addJob, updateJob, deleteJob, saveWorkLog } = useWorkActions({
+  const { addJob, saveJob, deleteJob, saveWorkLog } = useWorkActions({
     user,
     jobs,
     workLog,
@@ -122,7 +118,7 @@ export const useWorkState = (user: User | null): WorkState => {
     setJobs,
     setWorkLog,
     addJob,
-    updateJob,
+    saveJob,
     deleteJob,
     saveWorkLog,
     setDataError,
