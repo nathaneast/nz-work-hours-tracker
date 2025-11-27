@@ -11,7 +11,7 @@ import { isSupabaseConfigured } from "./services/supabaseClient";
 
 const App: React.FC = () => {
   const auth = useAuthSession();
-  const mode = useRouteMode(auth.user);
+  const mode = useRouteMode(auth.user, auth.isAuthLoading);
   const workState = useWorkState(auth.user);
   const calendarState = useCalendarState({
     jobs: workState.jobs,

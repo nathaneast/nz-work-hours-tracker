@@ -3,7 +3,10 @@ import type { User } from "@supabase/supabase-js";
 
 export type RouteMode = "demo" | "home";
 
-export const useRouteMode = (user: User | null): RouteMode => {
+export const useRouteMode = (
+  user: User | null,
+  isAuthLoading: boolean
+): RouteMode => {
   const [currentPath, setCurrentPath] = useState<string>(() => {
     if (typeof window === "undefined") {
       return "/demo";
@@ -33,11 +36,14 @@ export const useRouteMode = (user: User | null): RouteMode => {
   }, []);
 
   useEffect(() => {
+    if (isAuthLoading) {
+      return;
+    }
     const desiredPath = user ? "/home" : "/demo";
     if (currentPath !== desiredPath) {
       updatePath(desiredPath);
     }
-  }, [user, currentPath, updatePath]);
+  }, [user, currentPath, updatePath, isAuthLoading]);
 
   return currentPath === "/demo" ? "demo" : "home";
 };

@@ -30,16 +30,39 @@ export const TrackerHeader: React.FC<TrackerHeaderProps> = ({
       </p>
       <div className="mt-4 flex flex-col items-center gap-2">
         {isSupabaseConfigured ? (
-          user && (
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-gray-600">{user.email}</span>
+          user ? (
+            <div className="flex items-center gap-3 text-sm w-full justify-center sm:justify-end">
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt={user.user_metadata.full_name ?? user.email ?? "Profile"}
+                  className="h-9 w-9 rounded-full border border-gray-200 object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold">
+                  {user.email?.[0]?.toUpperCase() ?? "U"}
+                </div>
+              )}
+              <div className="flex flex-col text-left leading-tight">
+                <span className="font-medium text-gray-900 text-xs sm:text-sm">
+                  {user.user_metadata?.full_name ?? "Logged-in user"}
+                </span>
+                <span className="text-gray-600 text-[11px] sm:text-xs">
+                  {user.email}
+                </span>
+              </div>
               <button
                 onClick={onSignOut}
-                className="px-3 py-1.5 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
+                className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors text-xs sm:text-sm"
               >
                 Sign out
               </button>
             </div>
+          ) : (
+            <span className="text-sm text-gray-600">
+              Not signed in. Use the demo banner below to start syncing.
+            </span>
           )
         ) : (
           <span className="text-sm text-red-600">
