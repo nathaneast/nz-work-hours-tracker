@@ -2,12 +2,20 @@ import React from "react";
 import type { Region } from "../types";
 import { PlusIcon } from "./icons/PlusIcon";
 
+type RegionPersistOptions = {
+  isSaving: boolean;
+  isDirty: boolean;
+  isLoading: boolean;
+  onSave: () => void;
+};
+
 type RegionSelectorCardProps = {
   isVisible: boolean;
   selectedRegion: Region;
   regions: Region[];
   onSelectRegion: (region: Region) => void;
   onRevealSelector: () => void;
+  persistOptions?: RegionPersistOptions;
 };
 
 export const RegionSelectorCard: React.FC<RegionSelectorCardProps> = ({
@@ -16,6 +24,7 @@ export const RegionSelectorCard: React.FC<RegionSelectorCardProps> = ({
   regions,
   onSelectRegion,
   onRevealSelector,
+  persistOptions,
 }) => {
   return (
     <div className="p-4 bg-white rounded-lg shadow-md">
@@ -44,6 +53,27 @@ export const RegionSelectorCard: React.FC<RegionSelectorCardProps> = ({
             This adds your provincial anniversary day to the calendar for
             accurate pay calculation.
           </p>
+          {persistOptions && (
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="button"
+                onClick={persistOptions.onSave}
+                disabled={
+                  persistOptions.isSaving ||
+                  !persistOptions.isDirty ||
+                  persistOptions.isLoading
+                }
+                className="px-3 py-1.5 text-sm rounded-md bg-secondary text-white hover:bg-primary disabled:bg-gray-300 disabled:text-gray-600 disabled:cursor-not-allowed"
+              >
+                {persistOptions.isSaving ? "Saving…" : "Save default region"}
+              </button>
+              <span className="text-xs text-gray-600">
+                {persistOptions.isDirty
+                  ? "Unsaved default region change."
+                  : "Default region saved."}
+              </span>
+            </div>
+          )}
         </>
       ) : (
         <>

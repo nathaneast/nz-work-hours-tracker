@@ -11,6 +11,7 @@ import { getStartOfWeek, toYYYYMMDD } from "../utils";
 type CalendarStateProps = {
   jobs: Job[];
   workLog: WorkLog;
+  initialRegion?: Region;
 };
 
 export type CalendarState = {
@@ -34,6 +35,7 @@ export type CalendarState = {
 export const useCalendarState = ({
   jobs,
   workLog,
+  initialRegion,
 }: CalendarStateProps): CalendarState => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -47,7 +49,9 @@ export const useCalendarState = ({
     holidayHours: 0,
     jobBreakdown: [],
   });
-  const [selectedRegion, setSelectedRegion] = useState<Region>("None");
+  const [selectedRegion, setSelectedRegion] = useState<Region>(
+    initialRegion ?? "None"
+  );
   const [isRegionSelectorVisible, setIsRegionSelectorVisible] =
     useState(false);
 
@@ -99,6 +103,10 @@ export const useCalendarState = ({
     setIsModalOpen(false);
     setSelectedDate(null);
   };
+
+  useEffect(() => {
+    setSelectedRegion(initialRegion ?? "None");
+  }, [initialRegion]);
 
   const holidayName = selectedDate
     ? holidayMap.get(toYYYYMMDD(selectedDate))

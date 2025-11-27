@@ -7,15 +7,23 @@ import { useAuthSession } from "./hooks/useAuthSession";
 import { useRouteMode } from "./hooks/useRouteMode";
 import { useWorkState } from "./hooks/useWorkState";
 import { useCalendarState } from "./hooks/useCalendarState";
+import { useRegionPreference } from "./hooks/useRegionPreference";
 import { isSupabaseConfigured } from "./services/supabaseClient";
 
 const App: React.FC = () => {
   const auth = useAuthSession();
   const mode = useRouteMode(auth.user, auth.isAuthLoading);
   const workState = useWorkState(auth.user, auth.isAuthLoading);
+  const {
+    savedRegion,
+    isRegionLoading,
+    isRegionSaving,
+    saveRegionPreference,
+  } = useRegionPreference(auth.user);
   const calendarState = useCalendarState({
     jobs: workState.jobs,
     workLog: workState.workLog,
+    initialRegion: savedRegion,
   });
 
   const handleSaveWorkLog = useCallback(
@@ -27,6 +35,16 @@ const App: React.FC = () => {
     },
     [calendarState.selectedDate, workState.saveWorkLog]
   );
+
+  const canPersistRegion =
+    mode === "home" && Boolean(auth.user) && isSupabaseConfigured;
+
+  const handlePersistRegion = useCallback(async () => {
+    if (!canPersistRegion) {
+      return;
+    }
+    await saveRegionPreference(calendarState.selectedRegion);
+  }, [canPersistRegion, saveRegionPreference, calendarState.selectedRegion]);
 
   const pageProps: DemoHomePageProps = {
     auth: {
@@ -50,6 +68,15 @@ const App: React.FC = () => {
       onDeleteJob: workState.deleteJob,
       onSaveWorkLog: handleSaveWorkLog,
     },
+    regionPersistence: canPersistRegion
+      ? {
+          canPersist: true,
+          isSaving: isRegionSaving,
+          isDirty: savedRegion !== calendarState.selectedRegion,
+          isLoading: isRegionLoading,
+          onSave: handlePersistRegion,
+        }
+      : undefined,
   };
 
   return mode === "demo" ? (

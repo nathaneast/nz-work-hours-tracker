@@ -1,6 +1,7 @@
 import type { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import type { Job, WorkLog, WorkLogEntry } from '../types';
+import type { Job, WorkLog, WorkLogEntry, Region } from '../types';
+import { NZ_REGIONS } from '../constants';
 
 const ensureSupabase = () => {
   if (!isSupabaseConfigured) {
@@ -26,6 +27,22 @@ type WorkLogRow = {
   hours: number;
   created_at?: string;
   updated_at?: string;
+};
+
+type ProfileRow = {
+  id: string;
+  email?: string | null;
+  default_region?: string | null;
+};
+
+const DEFAULT_REGION: Region = 'None';
+
+const normalizeRegion = (value?: string | null): Region => {
+  if (!value) {
+    return DEFAULT_REGION;
+  }
+  const match = NZ_REGIONS.find((region) => region === value);
+  return match ?? DEFAULT_REGION;
 };
 
 const mapJobRowToJob = (row: JobRow): Job => ({
@@ -178,3 +195,31 @@ export const ensureProfile = async (userId: string, email?: string | null) => {
   }
 };
 
+export const fetchProfileRegion = async (userId: string): Promise<Region> => {
+  ensureSupabase();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select<ProfileRow>('default_region')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error && error.code !== 'PGRST116') {
+    throw error;
+  }
+
+  return normalizeRegion(data?.default_region ?? null);
+};
+
+export const saveProfileRegion = async (userId: string, region: Region): Promise<void> => {
+  ensureSupabase();
+  const payload = {
+    id: userId,
+    default_region: region,
+  };
+
+  const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+
+  if (error) {
+    throw error;
+  }
+};

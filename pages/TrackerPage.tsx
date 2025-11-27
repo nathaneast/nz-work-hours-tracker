@@ -37,11 +37,20 @@ type WorkProps = {
   onSaveWorkLog: (entries: WorkLogEntry[]) => Promise<void>;
 };
 
+type RegionPersistenceProps = {
+  canPersist: boolean;
+  isSaving: boolean;
+  isDirty: boolean;
+  isLoading: boolean;
+  onSave: () => Promise<void> | void;
+};
+
 export type TrackerPageProps = {
   mode: RouteMode;
   auth: AuthProps;
   calendar: CalendarState;
   work: WorkProps;
+  regionPersistence?: RegionPersistenceProps;
 };
 
 const formatRange = (week: Date[]) => {
@@ -67,6 +76,7 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
   auth,
   calendar,
   work,
+  regionPersistence,
 }) => {
   const selectedDayEntries = useMemo(() => {
     if (!calendar.selectedDate) {
@@ -136,6 +146,16 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
               regions={calendar.regions}
               onSelectRegion={calendar.setSelectedRegion}
               onRevealSelector={() => calendar.setIsRegionSelectorVisible(true)}
+              persistOptions={
+                regionPersistence?.canPersist
+                  ? {
+                      onSave: regionPersistence.onSave,
+                      isSaving: regionPersistence.isSaving,
+                      isDirty: regionPersistence.isDirty,
+                      isLoading: regionPersistence.isLoading,
+                    }
+                  : undefined
+              }
             />
             <JobEditor
               jobs={work.jobs}
