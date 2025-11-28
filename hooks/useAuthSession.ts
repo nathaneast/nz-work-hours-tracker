@@ -2,6 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "../services/supabaseClient";
 
+const LocalhostRedirectUrl = "http://localhost:3000/home";
+const DevHost = "nz-work-hours-tracker-dev.netlify.app";
+const ProdHost = "nz-work-hours-tracker-prod.netlify.app";
+const DevRedirectUrl = `https://${DevHost}/home`;
+const ProdRedirectUrl = `https://${ProdHost}/home`;
+
 type UseAuthSessionResult = {
   user: User | null;
   isAuthLoading: boolean;
@@ -65,10 +71,24 @@ export const useAuthSession = (): UseAuthSessionResult => {
 
     setAuthError(null);
 
+    const resolveRedirectUrl = () => {
+      const origin = window.location.origin;
+      if (origin.includes("localhost")) {
+        return LocalhostRedirectUrl;
+      }
+      if (origin.includes(DevHost)) {
+        return DevRedirectUrl;
+      }
+      if (origin.includes(ProdHost)) {
+        return ProdRedirectUrl;
+      }
+      return `${origin}/home`;
+    };
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/home`,
+        redirectTo: resolveRedirectUrl(),
       },
     });
 
