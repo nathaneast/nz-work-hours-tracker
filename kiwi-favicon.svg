@@ -1,0 +1,26 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kiwi bird icon">
+  <defs>
+    <linearGradient id="body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#008079" />
+      <stop offset="100%" stop-color="#004844" />
+    </linearGradient>
+    <linearGradient id="belly" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#40A578" />
+      <stop offset="100%" stop-color="#9DDE8B" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="26" fill="#E6FF94"/>
+  <ellipse cx="74" cy="92" rx="48" ry="10" fill="#000" opacity="0.2"/>
+  <ellipse cx="76" cy="78" rx="40" ry="32" fill="url(#body)"/>
+  <ellipse cx="80" cy="82" rx="28" ry="24" fill="url(#belly)"/>
+  <ellipse cx="44" cy="50" rx="22" ry="22" fill="url(#body)"/>
+  <ellipse cx="52" cy="46" rx="7" ry="7" fill="#fff"/>
+  <circle cx="54" cy="47" r="3.2" fill="#062"/>
+  <circle cx="50" cy="58" r="4" fill="#FFB0B0" opacity="0.7"/>
+  <path d="M40 52 L20 48 L42 63 Z" fill="#FFC675"/>
+  <path d="M62 92 h6 v26 h-6z" fill="#56381A"/>
+  <path d="M84 96 h6 v24 h-6z" fill="#56381A"/>
+  <path d="M68 118 h16 v4 H68z" fill="#56381A"/>
+  <path d="M46 114 h14 v4 H46z" fill="#56381A"/>
+  <path d="M82 72 Q108 72 104 94 Q90 92 88 86" fill="#9DDE8B" opacity="0.7"/>
+</svg>
