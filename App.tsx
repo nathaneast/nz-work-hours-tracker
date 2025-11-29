@@ -9,6 +9,7 @@ import { useWorkState } from "./hooks/useWorkState";
 import { useCalendarState } from "./hooks/useCalendarState";
 import { useRegionPreference } from "./hooks/useRegionPreference";
 import { isSupabaseConfigured } from "./services/supabaseClient";
+import { EnvironmentBanner } from "./components/EnvironmentBanner";
 
 const App: React.FC = () => {
   const auth = useAuthSession();
@@ -79,10 +80,13 @@ const App: React.FC = () => {
       : undefined,
   };
 
-  return mode === "demo" ? (
-    <DemoPage {...pageProps} />
-  ) : (
-    <HomePage {...pageProps} />
+  const PageComponent = mode === "demo" ? DemoPage : HomePage;
+
+  return (
+    <>
+      <EnvironmentBanner />
+      <PageComponent {...pageProps} />
+    </>
   );
 };
 
