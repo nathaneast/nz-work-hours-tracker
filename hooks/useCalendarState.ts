@@ -55,7 +55,10 @@ export const useCalendarState = ({
   const [isRegionSelectorVisible, setIsRegionSelectorVisible] =
     useState(false);
 
-  const startOfWeek = getStartOfWeek(currentDate);
+  const startOfWeek = useMemo(
+    () => getStartOfWeek(currentDate),
+    [currentDate]
+  );
   const week = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const day = new Date(startOfWeek);
