@@ -2,11 +2,38 @@ import { useCallback, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "../services/supabaseClient";
 
-const LocalhostRedirectUrl = "http://localhost:3000/home";
 const DevHost = "nz-work-hours-tracker-dev.netlify.app";
 const ProdHost = "nz-work-hours-tracker-prod.netlify.app";
 const DevRedirectUrl = `https://${DevHost}/home`;
 const ProdRedirectUrl = `https://${ProdHost}/home`;
+const DefaultRedirectUrl = ProdRedirectUrl;
+
+const resolveRedirectUrl = () => {
+  if (typeof window === "undefined") {
+    return DefaultRedirectUrl;
+  }
+
+  const { protocol, hostname, port, origin } = window.location;
+  const normalizeOrigin = () => {
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname.endsWith(".local")
+    ) {
+      const portSuffix = port ? `:${port}` : "";
+      return `${protocol}//${hostname}${portSuffix}`;
+    }
+    if (hostname === DevHost) {
+      return `https://${DevHost}`;
+    }
+    if (hostname === ProdHost) {
+      return `https://${ProdHost}`;
+    }
+    return origin;
+  };
+
+  return `${normalizeOrigin()}/home`;
+};
 
 type UseAuthSessionResult = {
   user: User | null;
@@ -70,20 +97,6 @@ export const useAuthSession = (): UseAuthSessionResult => {
     }
 
     setAuthError(null);
-
-    const resolveRedirectUrl = () => {
-      const origin = window.location.origin;
-      if (origin.includes("localhost")) {
-        return LocalhostRedirectUrl;
-      }
-      if (origin.includes(DevHost)) {
-        return DevRedirectUrl;
-      }
-      if (origin.includes(ProdHost)) {
-        return ProdRedirectUrl;
-      }
-      return `${origin}/home`;
-    };
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
