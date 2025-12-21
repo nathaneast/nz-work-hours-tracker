@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Job, WorkLogEntry } from '../types';
+import { decimalHoursToHoursMinutes, hoursMinutesToDecimal } from '../utils';
 
 interface WorkLogModalProps {
   isOpen: boolean;
@@ -11,8 +12,14 @@ interface WorkLogModalProps {
   holidayName?: string;
 }
 
+interface TimeInput {
+  hours: number;
+  minutes: number;
+}
+
 export const WorkLogModal: React.FC<WorkLogModalProps> = ({ isOpen, onClose, date, jobs, workLogForDay, onSave, holidayName }) => {
   const [entries, setEntries] = useState<WorkLogEntry[]>([]);
+  const [timeInputs, setTimeInputs] = useState<Map<string, TimeInput>>(new Map());
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -21,12 +28,44 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({ isOpen, onClose, dat
       return { jobId: job.id, hours: existingEntry?.hours || 0 };
     });
     setEntries(initialEntries);
+    
+    // Initialize time inputs
+    const initialTimeInputs = new Map<string, TimeInput>();
+    jobs.forEach(job => {
+      const existingEntry = workLogForDay.find(w => w.jobId === job.id);
+      const { hours, minutes } = decimalHoursToHoursMinutes(existingEntry?.hours || 0);
+      initialTimeInputs.set(job.id, { hours, minutes });
+    });
+    setTimeInputs(initialTimeInputs);
   }, [isOpen, jobs, workLogForDay]);
 
   if (!isOpen) return null;
 
-  const handleHourChange = (jobId: string, hours: number) => {
-    setEntries(prev => prev.map(entry => entry.jobId === jobId ? { ...entry, hours: Math.max(0, hours) } : entry));
+  const handleTimeChange = (jobId: string, field: 'hours' | 'minutes', value: number) => {
+    setTimeInputs(prev => {
+      const newMap = new Map(prev);
+      const current = newMap.get(jobId) || { hours: 0, minutes: 0 };
+      const updated = { ...current, [field]: Math.max(0, value) };
+      
+      // Ensure minutes are between 0 and 59
+      if (field === 'minutes') {
+        updated.minutes = Math.min(59, Math.max(0, value));
+      }
+      
+      newMap.set(jobId, updated);
+      
+      // Update entries with decimal hours
+      const decimalHours = hoursMinutesToDecimal(updated.hours, updated.minutes);
+      setEntries(prevEntries => 
+        prevEntries.map(entry => 
+          entry.jobId === jobId 
+            ? { ...entry, hours: decimalHours } 
+            : entry
+        )
+      );
+      
+      return newMap;
+    });
   };
 
   const handleSave = async () => {
@@ -74,23 +113,42 @@ export const WorkLogModal: React.FC<WorkLogModalProps> = ({ isOpen, onClose, dat
 
         <div className="space-y-4">
           {jobs.map(job => {
-            const entry = entries.find(e => e.jobId === job.id);
+            const timeInput = timeInputs.get(job.id) || { hours: 0, minutes: 0 };
             return (
-              <div key={job.id} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div key={job.id} className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1">
                     <span className={`w-5 h-5 rounded-full ${job.color}`}></span>
                     <label htmlFor={`hours-${job.id}`} className="font-medium text-gray-700">{job.name}</label>
                 </div>
-                <input
-                  id={`hours-${job.id}`}
-                  type="number"
-                  value={entry?.hours || ''}
-                  onChange={(e) => handleHourChange(job.id, parseFloat(e.target.value) || 0)}
-                className="w-24 p-2 border rounded-md text-right bg-white text-gray-900 disabled:bg-gray-100"
-                disabled={isSaving}
-                  placeholder="0"
-                  step="0.25"
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <input
+                      id={`hours-${job.id}`}
+                      type="number"
+                      value={timeInput.hours || ''}
+                      onChange={(e) => handleTimeChange(job.id, 'hours', parseInt(e.target.value) || 0)}
+                      className="w-14 p-1.5 border rounded-md text-right bg-white text-gray-900 disabled:bg-gray-100 text-sm"
+                      disabled={isSaving}
+                      placeholder="0"
+                      min="0"
+                    />
+                    <span className="text-gray-600 font-medium text-sm">h</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <input
+                      id={`minutes-${job.id}`}
+                      type="number"
+                      value={timeInput.minutes || ''}
+                      onChange={(e) => handleTimeChange(job.id, 'minutes', parseInt(e.target.value) || 0)}
+                      className="w-14 p-1.5 border rounded-md text-right bg-white text-gray-900 disabled:bg-gray-100 text-sm"
+                      disabled={isSaving}
+                      placeholder="0"
+                      min="0"
+                      max="59"
+                    />
+                    <span className="text-gray-600 font-medium text-sm">m</span>
+                  </div>
+                </div>
               </div>
             );
           })}

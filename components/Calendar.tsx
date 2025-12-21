@@ -1,6 +1,7 @@
 import React from 'react';
 import { Job, WorkLog, Holiday } from '../types';
-import { toYYYYMMDD } from '../utils';
+import { toYYYYMMDD, decimalHoursToHoursMinutes, calculateDailyNetPay } from '../utils';
+import { HOLIDAY_PAY_MULTIPLIER, ACC_LEVY_RATE } from '../constants';
 
 interface CalendarProps {
   week: Date[];
@@ -50,9 +51,24 @@ export const Calendar: React.FC<CalendarProps> = ({ week, workLog, jobs, onDayCl
             {holiday && <p className="text-xs text-red-600 mt-1 truncate text-center sm:text-left" title={holiday}>{holiday}</p>}
             
             {/* Use flex-grow to push dots to the bottom */}
-            <div className="flex-grow mt-2 text-center flex flex-col justify-center">
-              <p className="text-lg sm:text-xl font-bold">{totalHours > 0 ? totalHours.toFixed(1) : '-'}</p>
-              <p className="hidden sm:block text-xs text-gray-500">hours</p>
+            <div className="flex-grow mt-1 sm:mt-2 text-center flex flex-col justify-center min-h-[2rem]">
+              {totalHours > 0 ? (() => {
+                const { hours, minutes } = decimalHoursToHoursMinutes(totalHours);
+                const dailyNetPay = calculateDailyNetPay(dayLog, jobs, !!holiday, HOLIDAY_PAY_MULTIPLIER, ACC_LEVY_RATE);
+                return (
+                  <>
+                    <p className="text-xs sm:text-base md:text-lg font-bold leading-none">{hours}h</p>
+                    {minutes > 0 && (
+                      <p className="text-xs sm:text-base md:text-lg font-bold leading-none mt-0.5">{minutes}m</p>
+                    )}
+                    {dailyNetPay > 0 && (
+                      <p className="text-[9px] sm:text-[10px] text-red-600 font-medium leading-none mt-0.5">${dailyNetPay.toFixed(0)}</p>
+                    )}
+                  </>
+                );
+              })() : (
+                <p className="text-xs sm:text-base md:text-lg font-bold">-</p>
+              )}
             </div>
 
             <div className="mt-2 flex flex-wrap gap-1 justify-center h-4">
