@@ -1,7 +1,7 @@
 import React from 'react';
 import { Job, WorkLog, Holiday } from '../types';
 import { toYYYYMMDD, decimalHoursToHoursMinutes, calculateDailyNetPay } from '../utils';
-import { HOLIDAY_PAY_MULTIPLIER, ACC_LEVY_RATE } from '../constants';
+import { ACC_LEVY_RATE } from '../constants';
 
 interface CalendarProps {
   week: Date[];
@@ -54,7 +54,7 @@ export const Calendar: React.FC<CalendarProps> = ({ week, workLog, jobs, onDayCl
             <div className="flex-grow mt-1 sm:mt-2 text-center flex flex-col justify-center min-h-[2rem]">
               {totalHours > 0 ? (() => {
                 const { hours, minutes } = decimalHoursToHoursMinutes(totalHours);
-                const dailyNetPay = calculateDailyNetPay(dayLog, jobs, !!holiday, HOLIDAY_PAY_MULTIPLIER, ACC_LEVY_RATE);
+                const dailyNetPay = calculateDailyNetPay(dayLog, jobs, !!holiday, ACC_LEVY_RATE);
                 return (
                   <>
                     <p className="text-xs sm:text-base md:text-lg font-bold leading-none">{hours}h</p>

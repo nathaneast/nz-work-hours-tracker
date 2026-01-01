@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { WeekStartDay } from '../components/SettingsModal';
 import {
   fetchProfileWeekStartDay,
   saveProfileWeekStartDay,
 } from '../services/dataService';
 import { isSupabaseConfigured } from '../services/supabaseClient';
+
+export type WeekStartDay = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday, 1 = Monday, etc.
 
 const SETTINGS_STORAGE_KEY = 'nz-work-hours-tracker-settings';
 const DEFAULT_WEEK_START_DAY: WeekStartDay = 1; // Monday
@@ -30,11 +31,13 @@ export const useSettingsPreference = (user: User | null) => {
       try {
         const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
         if (stored) {
-          const parsed = JSON.parse(stored) as Settings;
+          const parsed = JSON.parse(stored) as Partial<Settings>;
+          const updated: Settings = { ...defaultSettings };
           // Validate weekStartDay
           if (typeof parsed.weekStartDay === 'number' && parsed.weekStartDay >= 0 && parsed.weekStartDay <= 6) {
-            setSettings(parsed);
+            updated.weekStartDay = parsed.weekStartDay;
           }
+          setSettings(updated);
         }
       } catch (error) {
         // eslint-disable-next-line no-console

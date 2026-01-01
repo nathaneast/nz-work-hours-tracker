@@ -9,7 +9,7 @@ interface JobEditorProps {
   onAddJob: () => Promise<void> | void;
   onSaveJob: (
     id: string,
-    updates: { name: string; payRate: number }
+    updates: { name: string; payRate: number; includeHolidayPay: boolean }
   ) => Promise<void> | void;
   onDeleteJob: (id: string) => Promise<void> | void;
   disabled?: boolean;
@@ -26,6 +26,7 @@ export const JobEditor: React.FC<JobEditorProps> = ({
 }) => {
   const [draftRates, setDraftRates] = useState<Record<string, string>>({});
   const [draftNames, setDraftNames] = useState<Record<string, string>>({});
+  const [draftIncludeHolidayPay, setDraftIncludeHolidayPay] = useState<Record<string, boolean>>({});
   const [savingJobId, setSavingJobId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,6 +42,13 @@ export const JobEditor: React.FC<JobEditorProps> = ({
       const next: Record<string, string> = {};
       jobs.forEach((job) => {
         next[job.id] = prev[job.id] ?? job.name;
+      });
+      return next;
+    });
+    setDraftIncludeHolidayPay((prev) => {
+      const next: Record<string, boolean> = {};
+      jobs.forEach((job) => {
+        next[job.id] = prev[job.id] !== undefined ? prev[job.id] : job.includeHolidayPay;
       });
       return next;
     });
@@ -73,9 +81,11 @@ export const JobEditor: React.FC<JobEditorProps> = ({
     const nameDraft = draftNames[job.id] ?? job.name;
     const rateDraft = draftRates[job.id] ?? job.payRate.toString();
     const rateValue = Number(rateDraft);
+    const includeHolidayPayDraft = draftIncludeHolidayPay[job.id] ?? job.includeHolidayPay;
     return (
       nameDraft !== job.name ||
-      (Number.isNaN(rateValue) ? 0 : rateValue) !== job.payRate
+      (Number.isNaN(rateValue) ? 0 : rateValue) !== job.payRate ||
+      includeHolidayPayDraft !== job.includeHolidayPay
     );
   };
 
@@ -87,14 +97,23 @@ export const JobEditor: React.FC<JobEditorProps> = ({
     const rateDraft = draftRates[job.id] ?? job.payRate.toString();
     const nextRate = Number(rateDraft);
     const sanitizedRate = Number.isNaN(nextRate) ? 0 : nextRate;
+    const includeHolidayPayDraft = draftIncludeHolidayPay[job.id] ?? job.includeHolidayPay;
 
     setSavingJobId(job.id);
     try {
-      await onSaveJob(job.id, { name: nameDraft, payRate: sanitizedRate });
+      await onSaveJob(job.id, { 
+        name: nameDraft, 
+        payRate: sanitizedRate,
+        includeHolidayPay: includeHolidayPayDraft,
+      });
       setDraftNames((prev) => ({ ...prev, [job.id]: nameDraft }));
       setDraftRates((prev) => ({
         ...prev,
         [job.id]: sanitizedRate.toString(),
+      }));
+      setDraftIncludeHolidayPay((prev) => ({
+        ...prev,
+        [job.id]: includeHolidayPayDraft,
       }));
     } finally {
       setSavingJobId(null);
@@ -147,6 +166,20 @@ export const JobEditor: React.FC<JobEditorProps> = ({
                 aria-label={`Pay rate for ${job.name}`}
               />
               <span className="text-gray-500 text-nowrap">/ hour</span>
+            </div>
+
+            {/* Include Holiday Pay Checkbox */}
+            <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={draftIncludeHolidayPay[job.id] ?? job.includeHolidayPay}
+                  onChange={(e) => setDraftIncludeHolidayPay((prev) => ({ ...prev, [job.id]: e.target.checked }))}
+                  disabled={disabled}
+                  className="w-4 h-4 text-secondary border-gray-300 rounded focus:ring-secondary"
+                />
+                <span className="text-sm text-gray-700">Holiday Pay</span>
+              </label>
             </div>
 
             {/* Actions Section: Aligns to the end of the pay rate line on mobile */}

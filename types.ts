@@ -16,6 +16,7 @@ export interface Job {
   name: string;
   payRate: number;
   color: string;
+  includeHolidayPay: boolean;
 }
 
 export interface WorkLogEntry {
@@ -33,11 +34,16 @@ export interface JobPayDetails {
   jobColor: string;
   totalHours: number;
   holidayHours: number;
+  ordinaryPay: number;
+  holidayPay: number;
   grossPay: number;
+  includeHolidayPay: boolean;
 }
 
 export interface PayDetails {
   grossPay: number;
+  ordinaryPay: number;
+  holidayPay: number;
   tax: number;
   accLevy: number;
   netPay: number;

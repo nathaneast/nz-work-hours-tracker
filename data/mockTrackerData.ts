@@ -8,8 +8,15 @@ export const MOCK_JOBS: Job[] = [
     name: "Cafe Barista",
     payRate: NZ_MINIMUM_WAGE,
     color: JOB_COLORS[0],
+    includeHolidayPay: false,
   },
-  { id: "job_2", name: "Farm Hand", payRate: 24.5, color: JOB_COLORS[1] },
+  { 
+    id: "job_2", 
+    name: "Farm Hand", 
+    payRate: 24.5, 
+    color: JOB_COLORS[1],
+    includeHolidayPay: false,
+  },
 ];
 
 export const createMockWorkLog = (): WorkLog => {

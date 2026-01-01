@@ -43,6 +43,7 @@ const buildNewJob = (existingJobs: Job[]): Job => {
     name: `Job ${existingJobs.length + 1}`,
     payRate: NZ_MINIMUM_WAGE,
     color,
+    includeHolidayPay: false,
   };
 };
 
@@ -63,7 +64,7 @@ export const useWorkActions = ({
   }, [jobs, setJobs]);
 
   const saveJob = useCallback(
-    async (id: string, updates: { name: string; payRate: number }) => {
+    async (id: string, updates: { name: string; payRate: number; includeHolidayPay: boolean }) => {
       const targetJob = jobs.find((job) => job.id === id);
       if (!targetJob) {
         return;
@@ -73,6 +74,7 @@ export const useWorkActions = ({
         ...targetJob,
         name: updates.name,
         payRate: updates.payRate,
+        includeHolidayPay: updates.includeHolidayPay,
       };
       setJobs((prev) => prev.map((job) => (job.id === id ? updatedJob : job)));
 

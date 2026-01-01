@@ -15,6 +15,7 @@ type JobRow = {
   name: string;
   pay_rate: number;
   color: string;
+  include_holiday_pay?: boolean | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -51,13 +52,14 @@ const mapJobRowToJob = (row: JobRow): Job => ({
   name: row.name,
   payRate: row.pay_rate,
   color: row.color,
+  includeHolidayPay: row.include_holiday_pay ?? false,
 });
 
 export const fetchUserJobs = async (userId: string): Promise<Job[]> => {
   ensureSupabase();
   const { data, error } = await supabase
     .from('jobs')
-    .select<JobRow>('id, user_id, name, pay_rate, color')
+    .select<JobRow>('id, user_id, name, pay_rate, color, include_holiday_pay')
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
 
@@ -76,12 +78,13 @@ export const upsertJob = async (userId: string, job: Job): Promise<Job> => {
     name: job.name,
     pay_rate: job.payRate,
     color: job.color,
+    include_holiday_pay: job.includeHolidayPay,
   };
 
   const { data, error } = await supabase
     .from('jobs')
     .upsert<JobRow>(payload, { onConflict: 'id' })
-    .select('id, user_id, name, pay_rate, color')
+    .select('id, user_id, name, pay_rate, color, include_holiday_pay')
     .single();
 
   if (error) {

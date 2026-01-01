@@ -11,7 +11,8 @@ import { toYYYYMMDD } from "../utils";
 import { TrackerHeader } from "../components/TrackerHeader";
 import { RegionSelectorCard } from "../components/RegionSelectorCard";
 import { WeekNavigator } from "../components/WeekNavigator";
-import { SettingsModal, type WeekStartDay } from "../components/SettingsModal";
+import { SettingsModal } from "../components/SettingsModal";
+import type { WeekStartDay } from "../hooks/useSettingsPreference";
 
 type AuthProps = {
   user: User | null;

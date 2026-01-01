@@ -33,21 +33,28 @@ export const decimalHoursToHoursMinutes = (decimalHours: number): { hours: numbe
 // Calculate daily net pay (simplified estimation)
 export const calculateDailyNetPay = (
     dayLog: Array<{ jobId: string; hours: number }>,
-    jobs: Array<{ id: string; payRate: number }>,
+    jobs: Array<{ id: string; payRate: number; includeHolidayPay: boolean }>,
     isHoliday: boolean,
-    holidayPayMultiplier: number = 1.5,
     accLevyRate: number = 0.0160
 ): number => {
-    let grossPay = 0;
+    const HOLIDAY_PAY_RATE = 0.08; // 8% of gross earnings
+    let ordinaryPay = 0;
+    let holidayPay = 0;
     
     for (const entry of dayLog) {
         const job = jobs.find(j => j.id === entry.jobId);
         if (job) {
-            const rateMultiplier = isHoliday ? holidayPayMultiplier : 1;
-            grossPay += entry.hours * job.payRate * rateMultiplier;
+            const entryOrdinaryPay = entry.hours * job.payRate;
+            ordinaryPay += entryOrdinaryPay;
+            
+            // Add 8% holiday pay if job has includeHolidayPay enabled
+            if (job.includeHolidayPay) {
+                holidayPay += entryOrdinaryPay * HOLIDAY_PAY_RATE;
+            }
         }
     }
     
+    const grossPay = ordinaryPay + holidayPay;
     if (grossPay === 0) return 0;
     
     // Estimate tax based on weekly pay (simplified)

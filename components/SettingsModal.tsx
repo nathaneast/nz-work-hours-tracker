@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-export type WeekStartDay = 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday, 1 = Monday, etc.
+import type { WeekStartDay } from '../hooks/useSettingsPreference';
 
 interface SettingsModalProps {
   isOpen: boolean;

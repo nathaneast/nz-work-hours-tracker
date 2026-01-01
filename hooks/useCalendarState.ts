@@ -44,6 +44,8 @@ export const useCalendarState = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [payDetails, setPayDetails] = useState<PayDetails>({
     grossPay: 0,
+    ordinaryPay: 0,
+    holidayPay: 0,
     tax: 0,
     accLevy: 0,
     netPay: 0,
