@@ -1,5 +1,6 @@
 import React from "react";
 import type { User } from "@supabase/supabase-js";
+import { SettingsIcon } from "./icons/SettingsIcon";
 
 type TrackerHeaderProps = {
   user: User | null;
@@ -56,9 +57,10 @@ export const TrackerHeader: React.FC<TrackerHeaderProps> = ({
               </div>
               <button
                 onClick={onSettingsClick}
-                className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors text-xs sm:text-sm"
+                className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors flex items-center justify-center"
+                aria-label="Settings"
               >
-                Settings
+                <SettingsIcon className="w-5 h-5" />
               </button>
               <button
                 onClick={onSignOut}
@@ -78,9 +80,7 @@ export const TrackerHeader: React.FC<TrackerHeaderProps> = ({
             상태입니다.
           </span>
         )}
-        {authError && (
-          <span className="text-sm text-red-600">{authError}</span>
-        )}
+        {authError && <span className="text-sm text-red-600">{authError}</span>}
       </div>
       {showDemoBanner && (
         <div className="mt-6 w-full max-w-2xl mx-auto bg-yellow-100 border border-yellow-300 text-yellow-900 px-5 py-4 rounded-lg text-left sm:text-center">

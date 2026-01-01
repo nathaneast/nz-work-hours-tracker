@@ -152,8 +152,8 @@ export const JobEditor: React.FC<JobEditorProps> = ({
               />
             </div>
 
-            {/* Pay Rate: Takes remaining space on its line */}
-            <div className="flex flex-1 items-center gap-2">
+            {/* Pay Rate: Full width on mobile */}
+            <div className="flex w-full sm:flex-1 items-center gap-2">
               <span className="text-gray-500">$</span>
               <input
                 type="text"
@@ -162,43 +162,46 @@ export const JobEditor: React.FC<JobEditorProps> = ({
                 onChange={(e) => handleRateChange(job.id, e.target.value)}
                 onBlur={() => handleRateBlur(job.id)}
                 disabled={disabled}
-                className="p-2 border rounded-md w-full bg-white text-gray-900 disabled:bg-gray-100 disabled:text-gray-500"
+                className="p-2 border rounded-md flex-1 min-w-0 bg-white text-gray-900 disabled:bg-gray-100 disabled:text-gray-500"
                 aria-label={`Pay rate for ${job.name}`}
               />
               <span className="text-gray-500 text-nowrap">/ hour</span>
             </div>
 
-            {/* Include Holiday Pay Checkbox */}
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-2 cursor-pointer">
+            {/* Holiday Pay, Save, Delete: All in one row (mobile-first) */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full mt-2">
+              <label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
                 <input
                   type="checkbox"
-                  checked={draftIncludeHolidayPay[job.id] ?? job.includeHolidayPay}
-                  onChange={(e) => setDraftIncludeHolidayPay((prev) => ({ ...prev, [job.id]: e.target.checked }))}
+                  checked={
+                    draftIncludeHolidayPay[job.id] ?? job.includeHolidayPay
+                  }
+                  onChange={(e) =>
+                    setDraftIncludeHolidayPay((prev) => ({
+                      ...prev,
+                      [job.id]: e.target.checked,
+                    }))
+                  }
                   disabled={disabled}
-                  className="w-4 h-4 text-secondary border-gray-300 rounded focus:ring-secondary"
+                  className="w-4 h-4 text-secondary border-gray-300 rounded focus:ring-secondary flex-shrink-0"
                 />
-                <span className="text-sm text-gray-700">Holiday Pay</span>
+                <span className="text-sm text-gray-700 whitespace-nowrap">
+                  Holiday Pay
+                </span>
               </label>
-            </div>
-
-            {/* Actions Section: Aligns to the end of the pay rate line on mobile */}
-            <div className="flex flex-col items-end gap-1">
               <button
                 onClick={() => handleSaveJob(job)}
                 disabled={
-                  disabled ||
-                  savingJobId === job.id ||
-                  !hasPendingChanges(job)
+                  disabled || savingJobId === job.id || !hasPendingChanges(job)
                 }
-                className="px-2 py-1 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 text-xs rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex-shrink-0"
               >
                 {savingJobId === job.id ? "Saving…" : "Save"}
               </button>
               <button
                 onClick={() => onDeleteJob(job.id)}
                 disabled={disabled}
-                className="text-red-500 hover:text-red-700 p-2 disabled:text-gray-300 disabled:cursor-not-allowed"
+                className="text-red-500 hover:text-red-700 p-1.5 disabled:text-gray-300 disabled:cursor-not-allowed flex-shrink-0"
                 aria-label={`Delete job ${job.name}`}
               >
                 <TrashIcon className="w-5 h-5" />
