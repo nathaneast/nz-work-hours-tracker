@@ -33,6 +33,7 @@ type ProfileRow = {
   id: string;
   email?: string | null;
   default_region?: string | null;
+  week_start_day?: number | null;
 };
 
 const DEFAULT_REGION: Region = 'None';
@@ -215,6 +216,40 @@ export const saveProfileRegion = async (userId: string, region: Region): Promise
   const payload = {
     id: userId,
     default_region: region,
+  };
+
+  const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+
+  if (error) {
+    throw error;
+  }
+};
+
+export const fetchProfileWeekStartDay = async (userId: string): Promise<number> => {
+  ensureSupabase();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select<ProfileRow>('week_start_day')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error && error.code !== 'PGRST116') {
+    throw error;
+  }
+
+  // Return default value (1 = Monday) if not set or invalid
+  const weekStartDay = data?.week_start_day;
+  if (typeof weekStartDay === 'number' && weekStartDay >= 0 && weekStartDay <= 6) {
+    return weekStartDay;
+  }
+  return 1; // Default to Monday
+};
+
+export const saveProfileWeekStartDay = async (userId: string, weekStartDay: number): Promise<void> => {
+  ensureSupabase();
+  const payload = {
+    id: userId,
+    week_start_day: weekStartDay,
   };
 
   const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });

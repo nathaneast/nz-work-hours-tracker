@@ -11,6 +11,7 @@ import { toYYYYMMDD } from "../utils";
 import { TrackerHeader } from "../components/TrackerHeader";
 import { RegionSelectorCard } from "../components/RegionSelectorCard";
 import { WeekNavigator } from "../components/WeekNavigator";
+import { SettingsModal, type WeekStartDay } from "../components/SettingsModal";
 
 type AuthProps = {
   user: User | null;
@@ -45,12 +46,18 @@ type RegionPersistenceProps = {
   onSave: () => Promise<void> | void;
 };
 
+type SettingsProps = {
+  weekStartDay: WeekStartDay;
+  onSaveSettings: (weekStartDay: WeekStartDay) => void;
+};
+
 export type TrackerPageProps = {
   mode: RouteMode;
   auth: AuthProps;
   calendar: CalendarState;
   work: WorkProps;
   regionPersistence?: RegionPersistenceProps;
+  settings: SettingsProps;
 };
 
 const formatRange = (week: Date[]) => {
@@ -77,7 +84,10 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
   calendar,
   work,
   regionPersistence,
+  settings,
 }) => {
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
+
   const selectedDayEntries = useMemo(() => {
     if (!calendar.selectedDate) {
       return [];
@@ -100,6 +110,7 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
           onSignIn={auth.onSignIn}
           onSignOut={auth.onSignOut}
           showDemoBanner={auth.showDemoBanner}
+          onSettingsClick={() => setIsSettingsModalOpen(true)}
         />
 
         {auth.user && work.isDataLoading && (
@@ -184,6 +195,13 @@ export const TrackerPage: React.FC<TrackerPageProps> = ({
           holidayName={calendar.holidayName}
         />
       )}
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        initialWeekStartDay={settings.weekStartDay}
+        onSave={settings.onSaveSettings}
+      />
     </div>
   );
 };

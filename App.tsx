@@ -8,6 +8,7 @@ import { useRouteMode } from "./hooks/useRouteMode";
 import { useWorkState } from "./hooks/useWorkState";
 import { useCalendarState } from "./hooks/useCalendarState";
 import { useRegionPreference } from "./hooks/useRegionPreference";
+import { useSettingsPreference } from "./hooks/useSettingsPreference";
 import { isSupabaseConfigured } from "./services/supabaseClient";
 import { EnvironmentBanner } from "./components/EnvironmentBanner";
 
@@ -15,17 +16,22 @@ const App: React.FC = () => {
   const auth = useAuthSession();
   const mode = useRouteMode(auth.user, auth.isAuthLoading);
   const workState = useWorkState(auth.user, auth.isAuthLoading);
-  const {
-    savedRegion,
-    isRegionLoading,
-    isRegionSaving,
-    saveRegionPreference,
-  } = useRegionPreference(auth.user);
+  const { savedRegion, isRegionLoading, isRegionSaving, saveRegionPreference } =
+    useRegionPreference(auth.user);
+  const { settings, saveSettings } = useSettingsPreference(auth.user);
   const calendarState = useCalendarState({
     jobs: workState.jobs,
     workLog: workState.workLog,
     initialRegion: savedRegion,
+    weekStartDay: settings.weekStartDay,
   });
+
+  const handleSaveSettings = useCallback(
+    (weekStartDay: number) => {
+      saveSettings({ weekStartDay: weekStartDay as 0 | 1 | 2 | 3 | 4 | 5 | 6 });
+    },
+    [saveSettings]
+  );
 
   const handleSaveWorkLog = useCallback(
     async (entries: WorkLogEntry[]) => {
@@ -78,6 +84,10 @@ const App: React.FC = () => {
           onSave: handlePersistRegion,
         }
       : undefined,
+    settings: {
+      weekStartDay: settings.weekStartDay,
+      onSaveSettings: handleSaveSettings,
+    },
   };
 
   const PageComponent = mode === "demo" ? DemoPage : HomePage;

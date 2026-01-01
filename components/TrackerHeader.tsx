@@ -9,6 +9,7 @@ type TrackerHeaderProps = {
   onSignIn: () => void;
   onSignOut: () => void;
   showDemoBanner: boolean;
+  onSettingsClick: () => void;
 };
 
 export const TrackerHeader: React.FC<TrackerHeaderProps> = ({
@@ -19,6 +20,7 @@ export const TrackerHeader: React.FC<TrackerHeaderProps> = ({
   onSignIn,
   onSignOut,
   showDemoBanner,
+  onSettingsClick,
 }) => {
   return (
     <header className="text-center mb-8">
@@ -52,6 +54,12 @@ export const TrackerHeader: React.FC<TrackerHeaderProps> = ({
                   {user.email}
                 </span>
               </div>
+              <button
+                onClick={onSettingsClick}
+                className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors text-xs sm:text-sm"
+              >
+                Settings
+              </button>
               <button
                 onClick={onSignOut}
                 className="px-3 py-1 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors text-xs sm:text-sm"

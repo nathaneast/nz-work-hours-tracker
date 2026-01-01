@@ -12,6 +12,7 @@ type CalendarStateProps = {
   jobs: Job[];
   workLog: WorkLog;
   initialRegion?: Region;
+  weekStartDay?: number;
 };
 
 export type CalendarState = {
@@ -36,6 +37,7 @@ export const useCalendarState = ({
   jobs,
   workLog,
   initialRegion,
+  weekStartDay = 1,
 }: CalendarStateProps): CalendarState => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -56,8 +58,8 @@ export const useCalendarState = ({
     useState(false);
 
   const startOfWeek = useMemo(
-    () => getStartOfWeek(currentDate),
-    [currentDate]
+    () => getStartOfWeek(currentDate, weekStartDay),
+    [currentDate, weekStartDay]
   );
   const week = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {

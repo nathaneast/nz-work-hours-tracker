@@ -1,11 +1,18 @@
-// Function to get the start of the week (Monday) based on a given date, using UTC.
-export const getStartOfWeek = (date: Date): Date => {
+// Function to get the start of the week based on a given date and start day, using UTC.
+// weekStartDay: 0 = Sunday, 1 = Monday, 2 = Tuesday, ..., 6 = Saturday
+export const getStartOfWeek = (date: Date, weekStartDay: number = 1): Date => {
   const d = new Date(date);
-  // Get day of week (0=Sunday, 1=Monday, ...). We want Monday to be start of week.
-  const dayOfWeek = d.getUTCDay();
-  // Calculate the date for the previous Monday.
-  const diff = d.getUTCDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // adjust when day is sunday
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), diff));
+  const dayOfWeek = d.getUTCDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  
+  // Calculate days to subtract to get to the start of the week
+  let diff = dayOfWeek - weekStartDay;
+  if (diff < 0) {
+    diff += 7; // If negative, go back to previous week's start day
+  }
+  
+  const startDate = new Date(d);
+  startDate.setUTCDate(d.getUTCDate() - diff);
+  return new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
 };
 
 export const toYYYYMMDD = (date: Date): string => {
