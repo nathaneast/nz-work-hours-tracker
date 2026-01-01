@@ -57,13 +57,23 @@ export const Calendar: React.FC<CalendarProps> = ({ week, workLog, jobs, onDayCl
                 const dailyNetPay = calculateDailyNetPay(dayLog, jobs, !!holiday, ACC_LEVY_RATE);
                 return (
                   <>
-                    <p className="text-xs sm:text-base md:text-lg font-bold leading-none">{hours}h</p>
+                    <p className="text-xs sm:text-base md:text-lg font-bold leading-none">
+                      {hours}h
+                    </p>
                     {minutes > 0 && (
-                      <p className="text-xs sm:text-base md:text-lg font-bold leading-none mt-0.5">{minutes}m</p>
+                      <>
+                        <p className="text-xs sm:text-base md:text-lg font-bold leading-none mt-0.5">
+                          {minutes}m
+                        </p>
+                        <p className="text-[8px] sm:text-[9px] text-gray-500 leading-none mt-0.5">
+                          {totalHours.toFixed(2)}h
+                        </p>
+                      </>
                     )}
-                    <p className="text-[8px] sm:text-[9px] text-gray-500 leading-none mt-0.5">{totalHours.toFixed(2)}h</p>
                     {dailyNetPay > 0 && (
-                      <p className="text-[9px] sm:text-[10px] text-red-600 font-medium leading-none mt-0.5">${dailyNetPay.toFixed(0)}</p>
+                      <p className="text-[9px] sm:text-[10px] text-red-600 font-medium leading-none mt-0.5">
+                        ${dailyNetPay.toFixed(0)}
+                      </p>
                     )}
                   </>
                 );

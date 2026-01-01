@@ -39,7 +39,9 @@ export const PaySummary: React.FC<PaySummaryProps> = ({ payDetails }) => {
           value={(() => {
             const { hours, minutes } = decimalHoursToHoursMinutes(totalHours);
             const hoursMinutesStr = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-            return `${hoursMinutesStr} (${totalHours.toFixed(2)} hrs)`;
+            return minutes > 0
+              ? `${hoursMinutesStr} (${totalHours.toFixed(2)})`
+              : hoursMinutesStr;
           })()}
         />
         {holidayHours > 0 && (
@@ -48,7 +50,9 @@ export const PaySummary: React.FC<PaySummaryProps> = ({ payDetails }) => {
             value={(() => {
               const { hours, minutes } = decimalHoursToHoursMinutes(holidayHours);
               const hoursMinutesStr = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-              return `${hoursMinutesStr} (${holidayHours.toFixed(2)} hrs)`;
+              return minutes > 0
+                ? `${hoursMinutesStr} (${holidayHours.toFixed(2)})`
+                : hoursMinutesStr;
             })()}
           />
         )}
@@ -73,7 +77,11 @@ export const PaySummary: React.FC<PaySummaryProps> = ({ payDetails }) => {
                         {job.jobName} {(() => {
                           const { hours, minutes } = decimalHoursToHoursMinutes(job.totalHours);
                           const hoursMinutesStr = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-                          return `${hoursMinutesStr} (${job.totalHours.toFixed(2)}h)`;
+                          return minutes > 0
+                            ? `${hoursMinutesStr} (${job.totalHours.toFixed(
+                                2
+                              )})`
+                            : hoursMinutesStr;
                         })()}
                       </span>
                       {job.includeHolidayPay && job.holidayPay > 0 && (
