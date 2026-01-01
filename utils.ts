@@ -38,23 +38,30 @@ export const calculateDailyNetPay = (
     accLevyRate: number = 0.0160
 ): number => {
     const HOLIDAY_PAY_RATE = 0.08; // 8% of gross earnings
+    const PUBLIC_HOLIDAY_PREMIUM_RATE = 0.5; // Additional 50% for working on public holidays
     let ordinaryPay = 0;
+    let publicHolidayPremium = 0;
     let holidayPay = 0;
     
     for (const entry of dayLog) {
         const job = jobs.find(j => j.id === entry.jobId);
         if (job) {
-            const entryOrdinaryPay = entry.hours * job.payRate;
-            ordinaryPay += entryOrdinaryPay;
+            const basePay = entry.hours * job.payRate;
+            ordinaryPay += basePay;
+            
+            // Add public holiday premium (0.5×) if working on a public holiday
+            if (isHoliday) {
+                publicHolidayPremium += basePay * PUBLIC_HOLIDAY_PREMIUM_RATE;
+            }
             
             // Add 8% holiday pay if job has includeHolidayPay enabled
             if (job.includeHolidayPay) {
-                holidayPay += entryOrdinaryPay * HOLIDAY_PAY_RATE;
+                holidayPay += basePay * HOLIDAY_PAY_RATE;
             }
         }
     }
     
-    const grossPay = ordinaryPay + holidayPay;
+    const grossPay = ordinaryPay + publicHolidayPremium + holidayPay;
     if (grossPay === 0) return 0;
     
     // Estimate tax based on weekly pay (simplified)

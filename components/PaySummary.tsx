@@ -1,5 +1,6 @@
 import React from 'react';
 import { PayDetails } from '../types';
+import { decimalHoursToHoursMinutes } from '../utils';
 
 interface PaySummaryProps {
   payDetails: PayDetails;
@@ -17,6 +18,7 @@ export const PaySummary: React.FC<PaySummaryProps> = ({ payDetails }) => {
   const {
     grossPay,
     ordinaryPay,
+    publicHolidayPremium,
     holidayPay,
     tax,
     accLevy,
@@ -34,12 +36,20 @@ export const PaySummary: React.FC<PaySummaryProps> = ({ payDetails }) => {
       <div className="space-y-2">
         <SummaryRow
           label="Total Hours"
-          value={`${totalHours.toFixed(2)} hrs`}
+          value={(() => {
+            const { hours, minutes } = decimalHoursToHoursMinutes(totalHours);
+            const hoursMinutesStr = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+            return `${hoursMinutesStr} (${totalHours.toFixed(2)} hrs)`;
+          })()}
         />
         {holidayHours > 0 && (
           <SummaryRow
             label="Public Holiday Hours"
-            value={`${holidayHours.toFixed(2)} hrs`}
+            value={(() => {
+              const { hours, minutes } = decimalHoursToHoursMinutes(holidayHours);
+              const hoursMinutesStr = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+              return `${hoursMinutesStr} (${holidayHours.toFixed(2)} hrs)`;
+            })()}
           />
         )}
 
@@ -60,7 +70,11 @@ export const PaySummary: React.FC<PaySummaryProps> = ({ payDetails }) => {
                     ></span>
                     <div className="flex flex-col">
                       <span className="text-gray-600">
-                        {job.jobName} ({job.totalHours.toFixed(1)}h)
+                        {job.jobName} {(() => {
+                          const { hours, minutes } = decimalHoursToHoursMinutes(job.totalHours);
+                          const hoursMinutesStr = minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+                          return `${hoursMinutesStr} (${job.totalHours.toFixed(2)}h)`;
+                        })()}
                       </span>
                       {job.includeHolidayPay && job.holidayPay > 0 && (
                         <span className="text-xs text-blue-600">
@@ -88,6 +102,13 @@ export const PaySummary: React.FC<PaySummaryProps> = ({ payDetails }) => {
 
         <hr className="my-2" />
         <SummaryRow label="Ordinary Pay" value={`$${ordinaryPay.toFixed(2)}`} />
+        {publicHolidayPremium > 0 && (
+          <SummaryRow
+            label="Public Holiday Premium (1.5×)"
+            value={`$${publicHolidayPremium.toFixed(2)}`}
+            className="text-green-600"
+          />
+        )}
         {holidayPay > 0 && (
           <SummaryRow
             label="Holiday Pay (8%)"

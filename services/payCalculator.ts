@@ -1,8 +1,13 @@
 import { Job, WorkLog, PayDetails, Holiday, JobPayDetails } from '../types';
-import { TAX_BRACKETS, ACC_LEVY_RATE } from "../constants";
+import {
+  TAX_BRACKETS,
+  ACC_LEVY_RATE,
+  HOLIDAY_PAY_MULTIPLIER,
+} from "../constants";
 import { toYYYYMMDD } from '../utils';
 
 const HOLIDAY_PAY_RATE = 0.08; // 8% of gross earnings
+const PUBLIC_HOLIDAY_PREMIUM_RATE = HOLIDAY_PAY_MULTIPLIER - 1; // 0.5 (additional 50% for working on public holidays)
 
 function getAnnualizedPay(weeklyPay: number): number {
   return weeklyPay * 52;
@@ -35,7 +40,8 @@ export function calculateWeeklyPay(
   week: Date[],
   holidays: Holiday[]
 ): PayDetails {
-  let ordinaryPay = 0; // Basic pay (hourly rate × hours)
+  let ordinaryPay = 0; // Basic pay (hourly rate × hours, regardless of holiday)
+  let publicHolidayPremium = 0; // Additional 0.5× pay for working on public holidays
   let totalHours = 0;
   let holidayHours = 0;
 
@@ -44,17 +50,23 @@ export function calculateWeeklyPay(
       totalHours: number;
       holidayHours: number;
       ordinaryPay: number;
+      publicHolidayPremium: number;
     };
   } = {};
 
   jobs.forEach((job) => {
-    jobPayMap[job.id] = { totalHours: 0, holidayHours: 0, ordinaryPay: 0 };
+    jobPayMap[job.id] = {
+      totalHours: 0,
+      holidayHours: 0,
+      ordinaryPay: 0,
+      publicHolidayPremium: 0,
+    };
   });
 
   const weekDateStrings = week.map((d) => toYYYYMMDD(d));
   const holidayDateStrings = holidays.map((h) => h.date);
 
-  // Calculate ordinary pay (basic hourly rate × hours)
+  // Calculate ordinary pay and public holiday premium
   for (const dateStr of weekDateStrings) {
     const dayLog = workLog[dateStr] || [];
     const isHoliday = holidayDateStrings.includes(dateStr);
@@ -62,20 +74,26 @@ export function calculateWeeklyPay(
     for (const entry of dayLog) {
       const job = jobs.find((j) => j.id === entry.jobId);
       if (job) {
-        // Ordinary pay is always basic rate × hours (no multiplier)
-        const payForEntry = entry.hours * job.payRate;
-
-        ordinaryPay += payForEntry;
-        totalHours += entry.hours;
-
-        // Update job-specific breakdown
-        jobPayMap[job.id].ordinaryPay += payForEntry;
-        jobPayMap[job.id].totalHours += entry.hours;
+        const basePay = entry.hours * job.payRate;
 
         if (isHoliday) {
+          // On public holidays: pay 1.5× (base pay + 0.5× premium)
+          const premium = basePay * PUBLIC_HOLIDAY_PREMIUM_RATE;
+          ordinaryPay += basePay;
+          publicHolidayPremium += premium;
           holidayHours += entry.hours;
+
+          jobPayMap[job.id].ordinaryPay += basePay;
+          jobPayMap[job.id].publicHolidayPremium += premium;
           jobPayMap[job.id].holidayHours += entry.hours;
+        } else {
+          // Regular day: base pay only
+          ordinaryPay += basePay;
+          jobPayMap[job.id].ordinaryPay += basePay;
         }
+
+        totalHours += entry.hours;
+        jobPayMap[job.id].totalHours += entry.hours;
       }
     }
   }
@@ -85,10 +103,12 @@ export function calculateWeeklyPay(
   const jobBreakdown: JobPayDetails[] = jobs
     .map((job) => {
       const jobOrdinaryPay = jobPayMap[job.id].ordinaryPay;
+      const jobPublicHolidayPremium = jobPayMap[job.id].publicHolidayPremium;
       const jobHolidayPay = job.includeHolidayPay
         ? jobOrdinaryPay * HOLIDAY_PAY_RATE
         : 0;
-      const jobGrossPay = jobOrdinaryPay + jobHolidayPay;
+      const jobGrossPay =
+        jobOrdinaryPay + jobPublicHolidayPremium + jobHolidayPay;
       totalHolidayPay += jobHolidayPay;
 
       return {
@@ -105,7 +125,7 @@ export function calculateWeeklyPay(
     })
     .filter((breakdown) => breakdown.totalHours > 0); // Only include jobs that were worked this week
 
-  const grossPay = ordinaryPay + totalHolidayPay;
+  const grossPay = ordinaryPay + publicHolidayPremium + totalHolidayPay;
 
   const annualizedPay = getAnnualizedPay(grossPay);
   const annualTax = calculateAnnualTax(annualizedPay);
@@ -116,6 +136,7 @@ export function calculateWeeklyPay(
   return {
     grossPay,
     ordinaryPay,
+    publicHolidayPremium,
     holidayPay: totalHolidayPay,
     tax: weeklyTax,
     accLevy,

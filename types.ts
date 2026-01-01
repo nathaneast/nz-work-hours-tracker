@@ -43,6 +43,7 @@ export interface JobPayDetails {
 export interface PayDetails {
   grossPay: number;
   ordinaryPay: number;
+  publicHolidayPremium: number;
   holidayPay: number;
   tax: number;
   accLevy: number;
